@@ -1,6 +1,6 @@
 # Implementation plan: TaroDomain for Go
 
-Status: Phase 0 done except CI's first green run; Steps 1.1–1.2 done, next is Step 1.3. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
+Status: Phase 0 done except CI's first green run; Steps 1.1–1.3 done, next is Step 1.4. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
 
 ## How to use this plan
 
@@ -197,10 +197,10 @@ Files: `error_report.go`, `error_report_test.go`
 
 #### Step 1.3: UUIDs
 Files: `uuid.go`, `uuid_test.go`
-- [ ] `UUID [16]byte` with `String()` (lower case, hyphenated), `ParseUUID` (any version, case-insensitive, hyphenated form only), `IsV7()`, `IsZero()`, text and JSON marshalling
-- [ ] `NewUUIDv7()`: 48-bit Unix milliseconds plus random bits from `crypto/rand`
-- [ ] `DerivedUUIDv7(seed, index, unixMs)`: the timestamp from `unixMs` and the other 74 bits from SHA-256(seed, index). The same input always gives the same ID, and it is still a valid v7
-- [ ] Tests: version and variant bits, v7 detection, upper and lower case parse equal, other text forms rejected, derived IDs are deterministic, carry their timestamp and depend on every input, JSON round trip
+- [x] `UUID [16]byte` with `String()` (lower case, hyphenated), `ParseUUID` (any version, case-insensitive, hyphenated form only), `IsV7()`, `IsZero()`, text and JSON marshalling
+- [x] `NewUUIDv7()`: 48-bit Unix milliseconds plus random bits from `crypto/rand`
+- [x] `DerivedUUIDv7(seed, index, unixMs)`: the timestamp from `unixMs` and the other 74 bits from SHA-256(seed, index). The same input always gives the same ID, and it is still a valid v7
+- [x] Tests: version and variant bits, v7 detection, upper and lower case parse equal, other text forms rejected, derived IDs are deterministic, carry their timestamp and depend on every input, JSON round trip
 
 #### Step 1.4: Clock, backoff and sleeper
 Files: `clock.go`, `backoff.go`, `sleeper.go`, `clock_test.go`, `backoff_test.go`
