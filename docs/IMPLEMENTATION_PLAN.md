@@ -1,6 +1,6 @@
 # Implementation plan: TaroDomain for Go
 
-Status: Phase 0 done except CI's first green run; Phases 1 and 2 done (Steps 1.1–2.5); Phase 3 in progress (Step 3.1 done), next is Step 3.2. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
+Status: Phase 0 done except CI's first green run; Phases 1 and 2 done (Steps 1.1–2.5); Phase 3 in progress (Steps 3.1–3.2 done), next is Step 3.3. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
 
 ## How to use this plan
 
@@ -270,10 +270,10 @@ Files: `stream_ids.go`, `event_store_adapter.go`, `stream_ids_test.go`
 
 #### Step 3.2: Snapshot and saga store contracts
 Files: `snapshot_store.go`, `saga_store.go`, `saga_store_test.go`
-- [ ] `SnapshotStoreAdapter` (§8.1), `SnapshotInput`, `Snapshot`. The key is `(source_uuid, source_version)`, and `Save` is an upsert
-- [ ] `SagaStoreAdapter` (§9.1), `SagaStatus` (`RUNNING`, `COMPENSATING`, `COMPLETED`, `FAILED`, with `IsActive` / `IsTerminal`), `SagaSaveInput`, `SagaRecord`, `SagaQuery { SagaType, Limit }`
-- [ ] `SagaRecord.Saved`, `Complete`, `Fail` and `IsTimedOut` state the write rules once (`StartedAt` kept, `UpdatedAt` moved, `CompletedAt` set on reaching a terminal status), for the in-memory adapter
-- [ ] Tests: status text round trip, the timestamp rules, ending a saga only once, the timed-out filter
+- [x] `SnapshotStoreAdapter` (§8.1), `SnapshotInput`, `Snapshot`. The key is `(source_uuid, source_version)`, and `Save` is an upsert
+- [x] `SagaStoreAdapter` (§9.1), `SagaStatus` (`RUNNING`, `COMPENSATING`, `COMPLETED`, `FAILED`, with `IsActive` / `IsTerminal`), `SagaSaveInput`, `SagaRecord`, `SagaQuery { SagaType, Limit }`
+- [x] `SagaRecord.Saved`, `Complete`, `Fail` and `IsTimedOut` state the write rules once (`StartedAt` kept, `UpdatedAt` moved, `CompletedAt` set on reaching a terminal status), for the in-memory adapter
+- [x] Tests: status text round trip, the timestamp rules, ending a saga only once, the timed-out filter
 
 #### Step 3.3: Idempotency, dead letter and unit of work contracts
 Files: `idempotency.go`, `dead_letter_store.go`, `unit_of_work.go`, `unit_of_work_test.go`
