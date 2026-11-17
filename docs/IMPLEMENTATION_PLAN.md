@@ -1,6 +1,6 @@
 # Implementation plan: TaroDomain for Go
 
-Status: Phase 0 done except CI's first green run; Phase 1 done (Steps 1.1–1.4), Steps 2.1–2.4 done, next is Step 2.5. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
+Status: Phase 0 done except CI's first green run; Phases 1 and 2 done (Steps 1.1–2.5), next is Step 3.1. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
 
 ## How to use this plan
 
@@ -249,14 +249,14 @@ Files: `command.go`, `command_test.go`
 
 #### Step 2.5: Aggregate root
 Files: `aggregate.go`, `aggregate_test.go`
-- [ ] `AggregateRoot`: version, uncommitted `[]DomainEvent`, and the aggregate's own execution context. Fields are unexported; `Root()` returns the embedded value, so embedding it satisfies the interface
-- [ ] `Aggregate` interface: `AggregateType() string`, `AggregateID() AggregateID`, `Root() *AggregateRoot`, `Apply(Event) error`
-- [ ] `Raise(ctx, aggregate, event) error`: apply, version + 1, queue with an envelope from the aggregate's own context, else the one in the `ctx`, else a new root, timed by `Now(ctx)`. A failed `Apply` queues nothing
-- [ ] On `AggregateRoot`: `Version()`, `CommittedVersion()`, `HasUncommittedChanges()`, `UncommittedChanges()`, `MarkChangesAsCommitted()`
-- [ ] `LoadFromHistory(aggregate, events)` continues from the current version and refuses to run with uncommitted changes (`INVALID_AGGREGATE_STATE`). `RestoreVersion(aggregate, version)` for state-stored aggregates (§6.3)
-- [ ] `Snapshotter` interface, `ToSnapshot(aggregate) (SnapshotData, error)` and `RestoreSnapshot(aggregate, data, version)`. A snapshot that doesn't fit is `SERIALIZATION_ERROR`
-- [ ] `MissingEventHandler(event)` for the `default` case of `Apply`, and `AssertAppliesAll(t, aggregate, events...)`, a test helper that fails if `Apply` rejects any of them
-- [ ] Tests: version arithmetic, `Raise` inside a context carries its correlation and causation, the aggregate's own context comes first, `Raise` outside one starts a root, the time comes from the clock in the `ctx`, history replay doesn't queue, an unhandled event, snapshot round trip
+- [x] `AggregateRoot`: version, uncommitted `[]DomainEvent`, and the aggregate's own execution context. Fields are unexported; `Root()` returns the embedded value, so embedding it satisfies the interface
+- [x] `Aggregate` interface: `AggregateType() string`, `AggregateID() AggregateID`, `Root() *AggregateRoot`, `Apply(Event) error`
+- [x] `Raise(ctx, aggregate, event) error`: apply, version + 1, queue with an envelope from the aggregate's own context, else the one in the `ctx`, else a new root, timed by `Now(ctx)`. A failed `Apply` queues nothing
+- [x] On `AggregateRoot`: `Version()`, `CommittedVersion()`, `HasUncommittedChanges()`, `UncommittedChanges()`, `MarkChangesAsCommitted()`
+- [x] `LoadFromHistory(aggregate, events)` continues from the current version and refuses to run with uncommitted changes (`INVALID_AGGREGATE_STATE`). `RestoreVersion(aggregate, version)` for state-stored aggregates (§6.3)
+- [x] `Snapshotter` interface, `ToSnapshot(aggregate) (SnapshotData, error)` and `RestoreSnapshot(aggregate, data, version)`. A snapshot that doesn't fit is `SERIALIZATION_ERROR`
+- [x] `MissingEventHandler(event)` for the `default` case of `Apply`, and `AssertAppliesAll(t, aggregate, events...)`, a test helper that fails if `Apply` rejects any of them
+- [x] Tests: version arithmetic, `Raise` inside a context carries its correlation and causation, the aggregate's own context comes first, `Raise` outside one starts a root, the time comes from the clock in the `ctx`, history replay doesn't queue, an unhandled event, snapshot round trip
 
 ### Phase 3: Persistence and bus contracts (§3.2, §8–10, §11.4, §12.3, §14, §21.1, §24.1)
 
