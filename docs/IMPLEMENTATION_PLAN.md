@@ -1,6 +1,6 @@
 # Implementation plan: TaroDomain for Go
 
-Status: Phase 0 done except CI's first green run; Phases 1–3 done (Steps 1.1–3.5), Steps 4.1–4.3 done, next is Step 4.4. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
+Status: Phase 0 done except CI's first green run; Phases 1–3 done (Steps 1.1–3.5), Steps 4.1–4.4 done, next is Step 4.5. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
 
 ## How to use this plan
 
@@ -321,11 +321,11 @@ Files: `local/snapshot_store.go`, `local/saga_store.go`, `local/idempotency.go`,
 - [x] Tests: snapshot upsert and per-type reads and deletes; saga timestamps, ending once, list order, filter before limit; idempotent marks keep their first time; dead-letter IDs and the latest entry, `DeleteOld`
 
 #### Step 4.4: Unit of work and LocalProvider
-Files: `local/unit_of_work.go`, `local/provider.go`, `local/unit_of_work_test.go`, `local/provider_test.go`
-- [ ] The unit takes the database's turn and copies the tables on `Begin`. Reads and writes whose `ctx` carries that unit use the copy, so the unit sees its own writes and other goroutines don't. `Commit` swaps the copy in; `Rollback` throws it away
-- [ ] `Begin` on an active unit and `Commit` on an inactive one are `INVALID_CONFIGURATION`; `Rollback` on an inactive one does nothing
-- [ ] `local.NewProvider()`, `local.NewProviderWithDatabase(db)` and `Database()`. `CreateEventBus` returns a new `InMemoryEventBus` for both modes; a transport other than `in_memory` is `INVALID_CONFIGURATION`. `ProviderType()` is `"local"`
-- [ ] Tests (with `-race`): commit and rollback over several tables, others see writes only after commit, a write outside waits, units run one at a time, a unit over another database is ignored, state checks; the provider's shared storage, new units, buses, clock
+Files (also edited: `local/database.go`, `local/database_test.go` and `local/event_store_test.go`, so a unit is found through `ActiveUnit` instead of a private ctx key): `local/unit_of_work.go`, `local/provider.go`, `local/unit_of_work_test.go`, `local/provider_test.go`
+- [x] The unit takes the database's turn and copies the tables on `Begin`. Reads and writes whose `ctx` carries that unit use the copy, so the unit sees its own writes and other goroutines don't. `Commit` swaps the copy in; `Rollback` throws it away
+- [x] `Begin` on an active unit and `Commit` on an inactive one are `INVALID_CONFIGURATION`; `Rollback` on an inactive one does nothing
+- [x] `local.NewProvider()`, `local.NewProviderWithDatabase(db)` and `Database()`. `CreateEventBus` returns a new `InMemoryEventBus` for both modes; a transport other than `in_memory` is `INVALID_CONFIGURATION`. `ProviderType()` is `"local"`
+- [x] Tests (with `-race`): commit and rollback over several tables, others see writes only after commit, a write outside waits, units run one at a time, a unit over another database is ignored, state checks; the provider's shared storage, new units, buses, clock
 
 #### Step 4.5: Testing package and event store contract
 Files: `tarotest/doc.go`, `tarotest/fixtures.go`, `tarotest/event_store_contract.go`

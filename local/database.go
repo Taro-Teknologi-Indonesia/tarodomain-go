@@ -55,23 +55,15 @@ func tableOf[T any](tb tables, name string) *rows[T] {
 	return r
 }
 
-// tx is the private copy of the tables that a unit of work reads and writes.
-// Step 4.4 creates one per unit and puts it in the ctx.
-type tx struct {
-	db     *Database
-	tables tables
-}
-
-type txKey struct{}
-
-func withTx(ctx context.Context, t *tx) context.Context {
-	return context.WithValue(ctx, txKey{}, t)
-}
-
-// txFor returns the unit's copy if ctx carries one made for db.
-func (db *Database) txFor(ctx context.Context) *tx {
-	if t, ok := ctx.Value(txKey{}).(*tx); ok && t != nil && t.db == db {
-		return t
+// txFor returns the unit of work ctx runs inside, if it is a local unit of
+// this database. Reads and writes then use the unit's private copy.
+func (db *Database) txFor(ctx context.Context) *UnitOfWork {
+	u, ok := tarodomain.ActiveUnit(ctx)
+	if !ok {
+		return nil
+	}
+	if lu, ok := u.(*UnitOfWork); ok && lu.db == db {
+		return lu
 	}
 	return nil
 }
@@ -146,8 +138,8 @@ func (db *Database) read(ctx context.Context, fn func(tb tables) error) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	if t := db.txFor(ctx); t != nil {
-		return fn(t.tables)
+	if u := db.txFor(ctx); u != nil {
+		return fn(u.tables)
 	}
 	db.mu.Lock()
 	defer db.mu.Unlock()
@@ -159,11 +151,11 @@ func (db *Database) read(ctx context.Context, fn func(tb tables) error) error {
 // returns an error, the changes it made so far stay: fn must check before it
 // changes anything.
 func (db *Database) write(ctx context.Context, fn func(tb tables) error) error {
-	if t := db.txFor(ctx); t != nil {
+	if u := db.txFor(ctx); u != nil {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
-		return fn(t.tables)
+		return fn(u.tables)
 	}
 	if err := db.acquireTurn(ctx); err != nil {
 		return err

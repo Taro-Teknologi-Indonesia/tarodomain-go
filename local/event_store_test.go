@@ -342,14 +342,22 @@ func TestConcurrentAppendsOneWins(t *testing.T) {
 func TestStoreUsesUnitCopy(t *testing.T) {
 	s, ctx := newStore()
 	sid := stream("Account")
-	u := withTx(ctx, &tx{db: s.db, tables: s.db.copyTables()})
-	if _, err := s.AppendToStream(u, sid, evs(1), 0); err != nil {
+	err := tarodomain.ExecuteInUnit(ctx, NewUnitOfWork(s.db), func(u context.Context) error {
+		if _, err := s.AppendToStream(u, sid, evs(1), 0); err != nil {
+			return err
+		}
+		if v, _ := s.StreamVersion(u, sid); v != 1 {
+			t.Fatalf("unit sees version %d", v)
+		}
+		if v, _ := s.StreamVersion(ctx, sid); v != 0 {
+			t.Fatalf("outside sees version %d", v)
+		}
+		return nil
+	})
+	if err != nil {
 		t.Fatal(err)
 	}
-	if v, _ := s.StreamVersion(u, sid); v != 1 {
-		t.Fatalf("unit sees version %d", v)
-	}
-	if v, _ := s.StreamVersion(ctx, sid); v != 0 {
-		t.Fatalf("outside sees version %d", v)
+	if v, _ := s.StreamVersion(ctx, sid); v != 1 {
+		t.Fatalf("after commit %d", v)
 	}
 }

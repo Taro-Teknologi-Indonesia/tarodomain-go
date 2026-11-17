@@ -142,26 +142,24 @@ func TestCopyIsDeep(t *testing.T) {
 		t.Fatalf("original has %d rows", n)
 	}
 
-	// Inside a unit's copy, reads and writes use the copy, not the original.
-	u := withTx(ctx, &tx{db: db, tables: cp})
-	if v, _, _ := rs.Get(u, "k"); v != "changed" {
-		t.Fatalf("unit read %q", v)
-	}
-	if err := rs.Put(u, "k", "in-unit"); err != nil {
+	// Inside a unit, reads and writes use its copy, not the original.
+	unit := NewUnitOfWork(db)
+	err := tarodomain.ExecuteInUnit(ctx, unit, func(uctx context.Context) error {
+		if err := rs.Put(uctx, "k", "in-unit"); err != nil {
+			return err
+		}
+		if v, _, _ := rs.Get(uctx, "k"); v != "in-unit" {
+			t.Fatalf("unit read %q", v)
+		}
+		if v, _, _ := rs.Get(ctx, "k"); v != "old" {
+			t.Fatalf("outside saw %q", v)
+		}
+		return nil
+	})
+	if err != nil {
 		t.Fatal(err)
 	}
-	if v, _, _ := rs.Get(ctx, "k"); v != "old" {
-		t.Fatalf("outside saw %q", v)
-	}
-	db.swapTables(cp)
 	if v, _, _ := rs.Get(ctx, "k"); v != "in-unit" {
-		t.Fatalf("after swap %q", v)
-	}
-
-	// A unit made for another database is ignored.
-	other := NewDatabase(nil)
-	u2 := withTx(ctx, &tx{db: other, tables: tables{}})
-	if v, ok, _ := rs.Get(u2, "k"); !ok || v != "in-unit" {
-		t.Fatalf("foreign unit hid the row: %q, %v", v, ok)
+		t.Fatalf("after commit %q", v)
 	}
 }
