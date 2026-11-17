@@ -1,6 +1,6 @@
 # Implementation plan: TaroDomain for Go
 
-Status: Phase 0 done except CI's first green run; Phases 1–3 done (Steps 1.1–3.5), next is Step 4.1. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
+Status: Phase 0 done except CI's first green run; Phases 1–3 done (Steps 1.1–3.5), Step 4.1 done, next is Step 4.2. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
 
 ## How to use this plan
 
@@ -300,10 +300,10 @@ Files: `provider.go`, `provider_test.go`
 
 #### Step 4.1: Local package and shared database
 Files: `local/doc.go`, `local/database.go`, `local/database_test.go`
-- [ ] `Database`: tables behind a mutex shared by every adapter of one provider, and an injectable `Clock`. The mutex is held only inside a synchronous closure (`read`, `write`), never across a call that can block
-- [ ] Writes also take the database's turn (a one-slot channel, so waiting respects `ctx`), which a unit of work holds for its whole life (Step 4.4)
-- [ ] `Table[T](db, name)`, so an application can keep in-memory read models in the same database and have them roll back with a unit
-- [ ] Tests: empty default, shared handles, the clock, a write waits for the turn and gives up when its `ctx` ends, a copy of the tables is deep
+- [x] `Database`: tables behind a mutex shared by every adapter of one provider, and an injectable `Clock`. The mutex is held only inside a synchronous closure (`read`, `write`), never across a call that can block
+- [x] Writes also take the database's turn (a one-slot channel, so waiting respects `ctx`), which a unit of work holds for its whole life (Step 4.4)
+- [x] `Table[T](db, name)`, so an application can keep in-memory read models in the same database and have them roll back with a unit
+- [x] Tests: empty default, shared handles, the clock, a write waits for the turn and gives up when its `ctx` ends, a copy of the tables is deep
 
 #### Step 4.2: In-memory event store adapter
 Files: `local/event_store.go`, `local/event_store_test.go`
