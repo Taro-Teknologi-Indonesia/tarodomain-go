@@ -1,0 +1,43 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.dev
+          load: true
+          tags: tarodomain-dev:ci
+          cache-from: type=gha,scope=dev-latest
+          cache-to: type=gha,mode=max,scope=dev-latest
+      - name: make check
+        run: docker run -v "$PWD":/workspace -u "$(id -u):$(id -g)" tarodomain-dev:ci make check
+
+  oldest-go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.dev
+          load: true
+          build-args: GO_VERSION=1.24
+          tags: tarodomain-dev:go1.24
+          cache-from: type=gha,scope=dev-go124
+          cache-to: type=gha,mode=max,scope=dev-go124
+      - name: tests on the oldest supported Go
+        run: docker run -v "$PWD":/workspace -u "$(id -u):$(id -g)" tarodomain-dev:go1.24 make test

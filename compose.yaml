@@ -1,0 +1,18 @@
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    # Match the host user so files written in the mounted repo aren't root's.
+    # ./dev exports HOST_UID and HOST_GID.
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - go-mod-cache:/go-cache/mod
+      - go-build-cache:/go-cache/build
+    command: sleep infinity
+
+volumes:
+  go-mod-cache:
+  go-build-cache:

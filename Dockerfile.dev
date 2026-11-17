@@ -1,0 +1,33 @@
+# Dev image: every tool the repo needs, so none is installed on the host.
+# Debian, not Alpine: the race detector needs cgo and a C compiler, and
+# workerd (Step 11.8) needs glibc.
+ARG GO_VERSION=1.27.4
+
+# staticcheck is built with the newest Go, so the image can still carry an older
+# Go (CI's oldest-supported job) that staticcheck itself would not build on.
+FROM golang:1.27.4-bookworm AS staticcheck
+ARG STATICCHECK_VERSION=2026.2.2
+RUN GOBIN=/out go install honnef.co/go/tools/cmd/staticcheck@${STATICCHECK_VERSION}
+
+FROM golang:${GO_VERSION}-bookworm
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends make git ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
+# World-writable cache and home directories, so the container can run as any
+# host UID. Named volumes mounted here inherit these permissions.
+RUN mkdir -p /home/dev /go-cache/mod /go-cache/build /go-cache/bin \
+ && chmod -R 0777 /home/dev /go-cache \
+ && git config --system --add safe.directory '*'
+
+ENV HOME=/home/dev \
+    GOPATH=/go-cache \
+    GOMODCACHE=/go-cache/mod \
+    GOCACHE=/go-cache/build \
+    GOBIN=/usr/local/bin \
+    GOFLAGS=-buildvcs=false
+
+COPY --from=staticcheck /out/staticcheck /usr/local/bin/staticcheck
+
+WORKDIR /workspace

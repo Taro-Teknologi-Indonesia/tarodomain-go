@@ -1,0 +1,13 @@
+#!/bin/sh
+# ./dev            open a shell in the dev container
+# ./dev <command>  run one command in it
+# Uses the active Docker context; names no engine.
+set -eu
+cd "$(dirname "$0")"
+HOST_UID=$(id -u)
+HOST_GID=$(id -g)
+export HOST_UID HOST_GID
+if [ "$#" -eq 0 ]; then
+	set -- bash
+fi
+exec docker compose run --rm --no-deps dev "$@"
