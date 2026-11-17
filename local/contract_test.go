@@ -28,3 +28,9 @@ func TestCommandIdempotencyContract(t *testing.T) {
 }
 
 func TestDeadLetterContract(t *testing.T) { tarotest.DeadLetterContract(tarotest.Wrap(t), newProvider) }
+
+func TestUnitOfWorkContract(t *testing.T) { tarotest.UnitOfWorkContract(tarotest.Wrap(t), newProvider) }
+
+func TestConcurrencyContract(t *testing.T) {
+	tarotest.ConcurrencyContract(tarotest.Wrap(t), newProvider)
+}

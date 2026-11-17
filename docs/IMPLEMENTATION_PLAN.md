@@ -1,6 +1,6 @@
 # Implementation plan: TaroDomain for Go
 
-Status: Phase 0 done except CI's first green run; Phases 1–3 done (Steps 1.1–3.5), Steps 4.1–4.6 done, next is Step 4.7. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
+Status: Phase 0 done except CI's first green run; Phases 1–3 done (Steps 1.1–3.5), Steps 4.1–4.7 done, next is Step 4.8. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
 
 ## How to use this plan
 
@@ -343,9 +343,9 @@ Files: `tarotest/snapshot_contract.go`, `tarotest/saga_store_contract.go`, `taro
 - [x] Dead letters: the stored fields, IDs increase and aren't reused, `List` in ID order, `Get` returns the latest, `GetByID`, `Delete`, `Count`, `DeleteOld`
 
 #### Step 4.7: Unit of work and concurrency contracts
-Files: `tarotest/unit_of_work_contract.go`, `tarotest/concurrency_contract.go`
-- [ ] Unit of work: commit keeps writes; rollback discards the writes of **every** store; the work's error comes back unchanged; reads inside the unit see its writes and readers outside don't; a nested call joins and never begins; a stale append inside a unit rolls back its other writes; two racing units on one stream let exactly one win. A provider without units skips the suite (`t.Skip`)
-- [ ] Concurrency: four appenders plus a reader looping `LoadAll` with a cursor (IDs deliberately out of append order); the reader sees every event exactly once, in append order. Four writers retrying on conflict lose no update. 16 concurrent readers never fail and agree
+Files: `tarotest/unit_of_work_contract.go`, `tarotest/concurrency_contract.go`, and `local/contract_test.go` (one test per suite)
+- [x] Unit of work: commit keeps writes; rollback discards the writes of **every** store; the work's error comes back unchanged; reads inside the unit see its writes and readers outside don't; a nested call joins and never begins; a stale append inside a unit rolls back its other writes; two racing units on one stream let exactly one win. A provider without units skips the suite (`t.Skip`)
+- [x] Concurrency: four appenders plus a reader looping `LoadAll` with a cursor (IDs deliberately out of append order); the reader sees every event exactly once, in append order. Four writers retrying on conflict lose no update. 16 concurrent readers never fail and agree
 
 #### Step 4.8: Provider contract and the local provider's run
 Files: `tarotest/provider_contract.go`, `tarotest/run.go`, `local/contract_test.go`, `README.md`
