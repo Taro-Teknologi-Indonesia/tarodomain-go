@@ -1,0 +1,17 @@
+# Go build output and test artifacts
+/bin/
+*.test
+*.out
+coverage.*
+
+# Local databases created by tests and examples
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+
+# Environment and editor/OS noise
+.env*
+!.env.example
+.DS_Store
+.idea/
