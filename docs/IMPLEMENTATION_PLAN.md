@@ -1,6 +1,6 @@
 # Implementation plan: TaroDomain for Go
 
-Status: Phase 0 done except CI's first green run; Phase 1 done (Steps 1.1–1.4), Steps 2.1–2.3 done, next is Step 2.4. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
+Status: Phase 0 done except CI's first green run; Phase 1 done (Steps 1.1–1.4), Steps 2.1–2.4 done, next is Step 2.5. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
 
 ## How to use this plan
 
@@ -240,12 +240,12 @@ Files: `event.go`, `serialized_event.go`, `event_test.go`
 
 #### Step 2.4: Commands
 Files: `command.go`, `command_test.go`
-- [ ] `Command` interface (`CommandName() string`)
-- [ ] `CommandMessage[C] { Envelope CommandEnvelope; Command C }`. `NewCommandMessage(ctx, c)` takes correlation, causation and metadata from the `ctx` and the timestamp from `Now(ctx)`. `WithID`, `WithCorrelationID`, `WithCausationID`, `WithMetadata` return copies
-- [ ] `AnyCommand`: a type-erased command (`Name`, `Envelope`, `Payload`), from `Erase(message)`; `CommandAs[C](AnyCommand) (CommandMessage[C], bool)`
-- [ ] `SerializedCommand` with the §2.2 fields (`command_id`, `command_type`, `causation_id`, `correlation_id`, `data`, `metadata`, `timestamp`)
-- [ ] `AnyCommand.WithDerivedID(seed, index, at)` on top of `DerivedUUIDv7`
-- [ ] Tests: defaults from the context, the timestamp from the clock in the `ctx`, the `With…` methods, `CommandAs`, serialized shape, derived IDs are stable and carry the event's time
+- [x] `Command` interface (`CommandName() string`)
+- [x] `CommandMessage[C] { Envelope CommandEnvelope; Command C }`. `NewCommandMessage(ctx, c)` takes correlation, causation and metadata from the `ctx` and the timestamp from `Now(ctx)`. `WithID`, `WithCorrelationID`, `WithCausationID`, `WithMetadata` return copies
+- [x] `AnyCommand`: a type-erased command (`Name`, `Envelope`, `Payload`), from `Erase(message)`; `CommandAs[C](AnyCommand) (CommandMessage[C], bool)`
+- [x] `SerializedCommand` with the §2.2 fields (`command_id`, `command_type`, `causation_id`, `correlation_id`, `data`, `metadata`, `timestamp`)
+- [x] `AnyCommand.WithDerivedID(seed, index, at)` on top of `DerivedUUIDv7`
+- [x] Tests: defaults from the context, the timestamp from the clock in the `ctx`, the `With…` methods, `CommandAs`, serialized shape, derived IDs are stable and carry the event's time
 
 #### Step 2.5: Aggregate root
 Files: `aggregate.go`, `aggregate_test.go`
