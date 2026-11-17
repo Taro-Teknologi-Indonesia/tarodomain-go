@@ -1,6 +1,6 @@
 # Implementation plan: TaroDomain for Go
 
-Status: Phase 0 done except CI's first green run; Step 1.1 done, next is Step 1.2. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
+Status: Phase 0 done except CI's first green run; Steps 1.1–1.2 done, next is Step 1.3. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
 
 ## How to use this plan
 
@@ -190,10 +190,10 @@ Files: `error_codes.go`, `errors.go`, `errors_test.go`
 
 #### Step 1.2: Error reports
 Files: `error_report.go`, `error_report_test.go`
-- [ ] `ToJSON()`: `code`, `category`, `message`, `retryable`, `httpStatus`, `context`
-- [ ] `ToHTTPResponse() HTTPErrorResponse{Status, Body}`. `body.error` holds `code`, `category`, `message` and `retryable`, and adds `context` only for 4xx. The cause is never included
-- [ ] `ToLogEntry()`: level warn for domain errors and error otherwise, with the cause chain. It implements `slog.LogValuer`
-- [ ] Tests: 4xx includes context, 5xx omits it, the cause never leaks, log levels
+- [x] `ToJSON()`: `code`, `category`, `message`, `retryable`, `httpStatus`, `context`
+- [x] `ToHTTPResponse() HTTPErrorResponse{Status, Body}`. `body.error` holds `code`, `category`, `message` and `retryable`, and adds `context` only for 4xx. The cause is never included
+- [x] `ToLogEntry()`: level warn for domain errors and error otherwise, with the cause chain. It implements `slog.LogValuer`
+- [x] Tests: 4xx includes context, 5xx omits it, the cause never leaks, log levels
 
 #### Step 1.3: UUIDs
 Files: `uuid.go`, `uuid_test.go`
