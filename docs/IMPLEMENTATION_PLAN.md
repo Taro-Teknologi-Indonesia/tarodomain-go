@@ -1,6 +1,6 @@
 # Implementation plan: TaroDomain for Go
 
-Status: Phase 0 done except CI's first green run; Phase 1 done (Steps 1.1–1.4), next is Step 2.1. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
+Status: Phase 0 done except CI's first green run; Phase 1 done (Steps 1.1–1.4), Step 2.1 done, next is Step 2.2. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
 
 ## How to use this plan
 
@@ -214,12 +214,12 @@ Files: `clock.go`, `backoff.go`, `sleeper.go`, `clock_test.go`, `backoff_test.go
 
 #### Step 2.1: Metadata, envelopes, ExecutionContext
 Files: `metadata.go`, `envelope.go`, `execution_context.go`, `metadata_test.go`, `envelope_test.go`
-- [ ] `Metadata`: an immutable map from string to a primitive (nil, bool, number, string). `With(key, value)` returns a copy. Serialized as a JSON object in key order; decoding rejects arrays and objects and keeps integers exact (`json.Number`, see Risks)
-- [ ] `EventEnvelope { ID, CorrelationID, CausationID, CommandCausationID, Metadata, OccurredAt }` and `CommandEnvelope { ID, CorrelationID, CausationID, Metadata, Timestamp }`. Timestamps are cut to whole milliseconds
-- [ ] Parsing IDs from strings fails with `INVALID_EVENT_ID` / `INVALID_CORRELATION_ID` / `INVALID_CAUSATION_ID`, or the `INVALID_COMMAND_*` codes
-- [ ] `ExecutionContext { CorrelationID, CausationID, CommandCausationID, Metadata }` with `NewExecutionContext(correlationID)` (a root), `ForCommand`, `ForEvent`, `WithExecutionContext(ctx, ec)` and `ExecutionContextFrom(ctx)`
-- [ ] Envelope defaults: a new v7 ID; the context's correlation ID or a new root; the context's causation ID or none
-- [ ] Tests: defaults outside any context, inheritance inside one, the right code for each invalid ID, a derived `ctx` doesn't change its parent, the §28.2 propagation chain
+- [x] `Metadata`: an immutable map from string to a primitive (nil, bool, number, string). `With(key, value)` returns a copy. Serialized as a JSON object in key order; decoding rejects arrays and objects and keeps integers exact (`json.Number`, see Risks)
+- [x] `EventEnvelope { ID, CorrelationID, CausationID, CommandCausationID, Metadata, OccurredAt }` and `CommandEnvelope { ID, CorrelationID, CausationID, Metadata, Timestamp }`. Timestamps are cut to whole milliseconds
+- [x] Parsing IDs from strings fails with `INVALID_EVENT_ID` / `INVALID_CORRELATION_ID` / `INVALID_CAUSATION_ID`, or the `INVALID_COMMAND_*` codes
+- [x] `ExecutionContext { CorrelationID, CausationID, CommandCausationID, Metadata }` with `NewExecutionContext(correlationID)` (a root), `ForCommand`, `ForEvent`, `WithExecutionContext(ctx, ec)` and `ExecutionContextFrom(ctx)`
+- [x] Envelope defaults: a new v7 ID; the context's correlation ID or a new root; the context's causation ID or none
+- [x] Tests: defaults outside any context, inheritance inside one, the right code for each invalid ID, a derived `ctx` doesn't change its parent, the §28.2 propagation chain
 
 #### Step 2.2: Value objects and aggregate IDs
 Files: `value_object.go`, `aggregate_id.go`, `value_object_test.go`, `aggregate_id_test.go`
