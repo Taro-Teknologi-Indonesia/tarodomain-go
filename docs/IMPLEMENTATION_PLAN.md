@@ -1,6 +1,6 @@
 # Implementation plan: TaroDomain for Go
 
-Status: Phase 0 in progress (Steps 0.1–0.4 done except CI's first green run; next is Phase 1). No framework code yet. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
+Status: Phase 0 done except CI's first green run; Step 1.1 done, next is Step 1.2. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
 
 ## How to use this plan
 
@@ -179,14 +179,14 @@ Files: `Makefile`, `.editorconfig`, `.github/workflows/ci.yml`, `README.md`
 
 #### Step 1.1: Error categories and codes
 Files: `error_codes.go`, `errors.go`, `errors_test.go`
-- [ ] `ErrorCategory` (`Domain`, `Concurrency`, `Infrastructure`, `Configuration`) with `Retryable()` and `HTTPStatus()` (400 / 409 / 500 / 500)
-- [ ] `ErrorCode`: all 51 codes of §22.2 as constants, with `String()`, `ParseErrorCode` and `Category()`
-- [ ] `*Error { Code, Category, Message, Context map[string]any }` with `Error()`, `Unwrap()`, `Retryable()`, `HTTPStatus()`, `WithContext(key, value)` and `WithCause(err)`. `With…` return a copy, so a shared error value is never changed
-- [ ] One constructor per code that carries context, e.g. `OptimisticConcurrency(streamID, expected, actual)`; `NewError(code, message)` for the rest
-- [ ] User codes: `NewDomainError(code, message)` and one sibling per category
-- [ ] `ErrCode(code)` as a target for `errors.Is`; `CodeOf(err) (ErrorCode, bool)`; `AsError(err) (*Error, bool)`
-- [ ] `ShouldRetry(err)`: an `*Error` answers with `Retryable()`; `context.Canceled` and `context.DeadlineExceeded` are `false`; anything else is infrastructure and `true`. `Infrastructure(err)` wraps a foreign error
-- [ ] Tests: 19 / 3 / 18 / 11 codes per category; the retryable and HTTP status matrix for every code; `String` ↔ `ParseErrorCode` round trip; a custom code keeps its category; `errors.Is` and `errors.As` through a wrapped error; cancellation isn't retried
+- [x] `ErrorCategory` (`Domain`, `Concurrency`, `Infrastructure`, `Configuration`) with `Retryable()` and `HTTPStatus()` (400 / 409 / 500 / 500)
+- [x] `ErrorCode`: all 51 codes of §22.2 as constants, with `String()`, `ParseErrorCode` and `Category()`
+- [x] `*Error { Code, Category, Message, Context map[string]any }` with `Error()`, `Unwrap()`, `Retryable()`, `HTTPStatus()`, `WithContext(key, value)` and `WithCause(err)`. `With…` return a copy, so a shared error value is never changed
+- [x] One constructor per code that carries context, e.g. `OptimisticConcurrency(streamID, expected, actual)`; `NewError(code, message)` for the rest
+- [x] User codes: `NewDomainError(code, message)` and one sibling per category
+- [x] `ErrCode(code)` as a target for `errors.Is`; `CodeOf(err) (ErrorCode, bool)`; `AsError(err) (*Error, bool)`
+- [x] `ShouldRetry(err)`: an `*Error` answers with `Retryable()`; `context.Canceled` and `context.DeadlineExceeded` are `false`; anything else is infrastructure and `true`. `Infrastructure(err)` wraps a foreign error
+- [x] Tests: 19 / 3 / 18 / 11 codes per category; the retryable and HTTP status matrix for every code; `String` ↔ `ParseErrorCode` round trip; a custom code keeps its category; `errors.Is` and `errors.As` through a wrapped error; cancellation isn't retried
 
 #### Step 1.2: Error reports
 Files: `error_report.go`, `error_report_test.go`
