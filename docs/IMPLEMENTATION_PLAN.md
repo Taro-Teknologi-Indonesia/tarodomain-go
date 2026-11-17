@@ -1,6 +1,6 @@
 # Implementation plan: TaroDomain for Go
 
-Status: Phase 0 done except CI's first green run; Phase 1 done (Steps 1.1–1.4), Steps 2.1–2.2 done, next is Step 2.3. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
+Status: Phase 0 done except CI's first green run; Phase 1 done (Steps 1.1–1.4), Steps 2.1–2.3 done, next is Step 2.4. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
 
 ## How to use this plan
 
@@ -231,12 +231,12 @@ Files: `value_object.go`, `aggregate_id.go`, `value_object_test.go`, `aggregate_
 
 #### Step 2.3: Events
 Files: `event.go`, `serialized_event.go`, `event_test.go`
-- [ ] `Event` interface (`EventName() string`) and the optional `VersionedEvent` (`EventVersion() string`); `EventVersionOf(e)` defaults to `"1.0.0"`
-- [ ] `DomainEvent`: envelope, name, version and payload, with `Payload() Event`. `NewDomainEvent(envelope, payload)` rejects a pointer payload (`INVALID_CONFIGURATION`)
-- [ ] `Recorded[E] { Envelope, Event E }`, `EventAs[E](DomainEvent) (Recorded[E], bool)` and `EventIs[E](DomainEvent) bool`
-- [ ] `SerializedEvent` with the §2.1 storage fields (`event_id`, `event_type`, `event_version`, `causation_id`, `correlation_id`, `data`, `metadata`, `occurred_at`) plus `command_causation_id`, typed (`UUID`, `Metadata`, `time.Time`, `json.RawMessage`). `DomainEvent.Serialize()` fails with `SERIALIZATION_ERROR` for a payload without a JSON form
-- [ ] `FormatTimestamp` / `ParseTimestamp`: the ISO 8601 form with exactly three fractional digits that every store writes
-- [ ] Tests: field names in the serialized JSON, `EventAs` to the wrong type is `false`, `occurred_at` is ISO 8601 with milliseconds, JSON round trip, a pointer payload is rejected
+- [x] `Event` interface (`EventName() string`) and the optional `VersionedEvent` (`EventVersion() string`); `EventVersionOf(e)` defaults to `"1.0.0"`
+- [x] `DomainEvent`: envelope, name, version and payload, with `Payload() Event`. `NewDomainEvent(envelope, payload)` rejects a pointer payload (`INVALID_CONFIGURATION`)
+- [x] `Recorded[E] { Envelope, Event E }`, `EventAs[E](DomainEvent) (Recorded[E], bool)` and `EventIs[E](DomainEvent) bool`
+- [x] `SerializedEvent` with the §2.1 storage fields (`event_id`, `event_type`, `event_version`, `causation_id`, `correlation_id`, `data`, `metadata`, `occurred_at`) plus `command_causation_id`, typed (`UUID`, `Metadata`, `time.Time`, `json.RawMessage`). `DomainEvent.Serialize()` fails with `SERIALIZATION_ERROR` for a payload without a JSON form
+- [x] `FormatTimestamp` / `ParseTimestamp`: the ISO 8601 form with exactly three fractional digits that every store writes
+- [x] Tests: field names in the serialized JSON, `EventAs` to the wrong type is `false`, `occurred_at` is ISO 8601 with milliseconds, JSON round trip, a pointer payload is rejected
 
 #### Step 2.4: Commands
 Files: `command.go`, `command_test.go`
