@@ -1,6 +1,6 @@
 # Implementation plan: TaroDomain for Go
 
-Status: Phase 0 done except CI's first green run; Phases 1–3 done (Steps 1.1–3.5), Steps 4.1–4.2 done, next is Step 4.3. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
+Status: Phase 0 done except CI's first green run; Phases 1–3 done (Steps 1.1–3.5), Steps 4.1–4.3 done, next is Step 4.4. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
 
 ## How to use this plan
 
@@ -315,10 +315,10 @@ Files: `local/event_store.go`, `local/event_store_test.go`
 
 #### Step 4.3: In-memory stores
 Files: `local/snapshot_store.go`, `local/saga_store.go`, `local/idempotency.go`, `local/dead_letter.go`, `local/stores_test.go`
-- [ ] One adapter per contract of Steps 3.2–3.3, each with a table of its own. Timestamps come from the database's clock
-- [ ] Sagas: `LoadByStatus` ordered by `UpdatedAt`, then type and ID; `LoadTimedOut` filters to active sagas, by type, before the limit
-- [ ] Dead letters get increasing IDs, never reused after a delete
-- [ ] Tests: snapshot upsert and per-type reads and deletes; saga timestamps, ending once, list order, filter before limit; idempotent marks keep their first time; dead-letter IDs and the latest entry, `DeleteOld`
+- [x] One adapter per contract of Steps 3.2–3.3, each with a table of its own. Timestamps come from the database's clock
+- [x] Sagas: `LoadByStatus` ordered by `UpdatedAt`, then type and ID; `LoadTimedOut` filters to active sagas, by type, before the limit
+- [x] Dead letters get increasing IDs, never reused after a delete
+- [x] Tests: snapshot upsert and per-type reads and deletes; saga timestamps, ending once, list order, filter before limit; idempotent marks keep their first time; dead-letter IDs and the latest entry, `DeleteOld`
 
 #### Step 4.4: Unit of work and LocalProvider
 Files: `local/unit_of_work.go`, `local/provider.go`, `local/unit_of_work_test.go`, `local/provider_test.go`
