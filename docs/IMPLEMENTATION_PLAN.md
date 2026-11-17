@@ -1,6 +1,6 @@
 # Implementation plan: TaroDomain for Go
 
-Status: Phase 0 done except CI's first green run; Phases 1–3 done (Steps 1.1–3.5), Step 4.1 done, next is Step 4.2. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
+Status: Phase 0 done except CI's first green run; Phases 1–3 done (Steps 1.1–3.5), Steps 4.1–4.2 done, next is Step 4.3. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
 
 ## How to use this plan
 
@@ -307,11 +307,11 @@ Files: `local/doc.go`, `local/database.go`, `local/database_test.go`
 
 #### Step 4.2: In-memory event store adapter
 Files: `local/event_store.go`, `local/event_store_test.go`
-- [ ] The expected-version check and the append happen in one `write`. A conflict is `OPTIMISTIC_CONCURRENCY` with the stream, expected and actual versions as context. An ID already stored, or twice in one append, is `EVENT_APPEND_FAILED` and writes nothing
-- [ ] Cross-stream reads are ordered by append position. An `afterEventID` cursor resolves to its position, falling back to comparing IDs only if that event was deleted
-- [ ] Category streams and `$all`
-- [ ] Subscriptions: `Subscribe` is idempotent, `Ack` only moves forward in append order, and `RecordFailedAttempt` counts per event and resets on ack
-- [ ] Tests: versions and conflicts, empty appends, non-aggregate streams, duplicate IDs, `afterVersion` and `maxCount`, append order across streams with same-millisecond IDs in reverse, the deleted-cursor fallback, correlation, subscriptions
+- [x] The expected-version check and the append happen in one `write`. A conflict is `OPTIMISTIC_CONCURRENCY` with the stream, expected and actual versions as context. An ID already stored, or twice in one append, is `EVENT_APPEND_FAILED` and writes nothing
+- [x] Cross-stream reads are ordered by append position. An `afterEventID` cursor resolves to its position, falling back to comparing IDs only if that event was deleted
+- [x] Category streams and `$all`
+- [x] Subscriptions: `Subscribe` is idempotent, `Ack` only moves forward in append order, and `RecordFailedAttempt` counts per event and resets on ack
+- [x] Tests: versions and conflicts, empty appends, non-aggregate streams, duplicate IDs, `afterVersion` and `maxCount`, append order across streams with same-millisecond IDs in reverse, the deleted-cursor fallback, correlation, subscriptions
 
 #### Step 4.3: In-memory stores
 Files: `local/snapshot_store.go`, `local/saga_store.go`, `local/idempotency.go`, `local/dead_letter.go`, `local/stores_test.go`
