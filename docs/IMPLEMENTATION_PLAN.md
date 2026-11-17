@@ -1,6 +1,6 @@
 # Implementation plan: TaroDomain for Go
 
-Status: Phase 0 done except CI's first green run; Steps 1.1–1.3 done, next is Step 1.4. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
+Status: Phase 0 done except CI's first green run; Phase 1 done (Steps 1.1–1.4), next is Step 2.1. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
 
 ## How to use this plan
 
@@ -204,11 +204,11 @@ Files: `uuid.go`, `uuid_test.go`
 
 #### Step 1.4: Clock, backoff and sleeper
 Files: `clock.go`, `backoff.go`, `sleeper.go`, `clock_test.go`, `backoff_test.go`
-- [ ] `Clock` interface (`Now() time.Time`), `SystemClock`, and `ManualClock` (set and advance, safe for concurrent use)
-- [ ] `WithClock(ctx, clock)` and `Now(ctx)`: the clock in the `ctx`, else the system clock, always UTC and cut to milliseconds
-- [ ] `Backoff { Initial, Multiplier, Max, Jitter }` with `Delay(attempt, random)`: `Initial * Multiplier^attempt`, ±`Jitter`, never more than `Max`. `RandomSource` interface (`Float64()` in [0, 1)), defaulting to `math/rand/v2`
-- [ ] `Sleeper` interface (`Sleep(ctx, d) error`, returning the context's error if it ends first), `TimerSleeper`, and `RecordingSleeper` for tests
-- [ ] Tests: 10 → 20 → 40 ms with zero jitter, the cap, jitter within ±10%, the manual clock, the clock in a `ctx`, a cancelled sleep returns at once
+- [x] `Clock` interface (`Now() time.Time`), `SystemClock`, and `ManualClock` (set and advance, safe for concurrent use)
+- [x] `WithClock(ctx, clock)` and `Now(ctx)`: the clock in the `ctx`, else the system clock, always UTC and cut to milliseconds
+- [x] `Backoff { Initial, Multiplier, Max, Jitter }` with `Delay(attempt, random)`: `Initial * Multiplier^attempt`, ±`Jitter`, never more than `Max`. `RandomSource` interface (`Float64()` in [0, 1)), defaulting to `math/rand/v2`
+- [x] `Sleeper` interface (`Sleep(ctx, d) error`, returning the context's error if it ends first), `TimerSleeper`, and `RecordingSleeper` for tests
+- [x] Tests: 10 → 20 → 40 ms with zero jitter, the cap, jitter within ±10%, the manual clock, the clock in a `ctx`, a cancelled sleep returns at once
 
 ### Phase 2: Domain primitives (§2, §5, §5.5, §28)
 
