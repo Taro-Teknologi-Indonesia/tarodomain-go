@@ -1,6 +1,6 @@
 # Implementation plan: TaroDomain for Go
 
-Status: Phase 0 done except CI's first green run; Phases 1–3 done (Steps 1.1–3.5), Steps 4.1–4.5 done, next is Step 4.6. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
+Status: Phase 0 done except CI's first green run; Phases 1–3 done (Steps 1.1–3.5), Steps 4.1–4.6 done, next is Step 4.7. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
 
 ## How to use this plan
 
@@ -335,12 +335,12 @@ Files: `tarotest/doc.go`, `tarotest/t.go` (`T`, `Factory` and `Wrap`, the only f
 - [x] Event store contract: versions from 1 and 0 for a missing stream; a stale expected version conflicts (with its context), including two racing appends; an empty append; non-aggregate streams and duplicate IDs fail atomically; events round-trip unchanged; `afterVersion` and `maxCount`; category and `$all` reads; two same-millisecond IDs come back in append order; a cursor whose event was deleted; load by correlation ID; delete stream; subscription create, ack, list, delete and failed attempts
 
 #### Step 4.6: Store contracts
-Files: `tarotest/snapshot_contract.go`, `tarotest/saga_store_contract.go`, `tarotest/idempotency_contract.go`, `tarotest/dead_letter_contract.go`
-- [ ] The suites never compare with fixed times: they compare with the timestamps the store returned, or with a cut-off long ago or far in the future, and check list order as a property
-- [ ] Snapshots: the stored fields, upsert, latest (the highest version), at a version, per-type reads, list newest first, `DeleteBefore` keeps the cut-off and returns the count, `DeleteAll`, `Count`
-- [ ] Sagas: the stored fields and timestamp rules, idempotent `Complete` / `Fail` (also on a missing saga), `LoadByStatus` order and the type filter before the limit, `LoadTimedOut`, `Delete`, `Count`
-- [ ] Processed events and commands: idempotent marks keep the first record, `Exists` per instance, `Count`, `DeleteByHandler`, the command list order, `DeleteOld` with an exclusive cut-off
-- [ ] Dead letters: the stored fields, IDs increase and aren't reused, `List` in ID order, `Get` returns the latest, `GetByID`, `Delete`, `Count`, `DeleteOld`
+Files: `tarotest/snapshot_contract.go`, `tarotest/saga_store_contract.go`, `tarotest/idempotency_contract.go`, `tarotest/dead_letter_contract.go`, and `local/contract_test.go` (one test per suite)
+- [x] The suites never compare with fixed times: they compare with the timestamps the store returned, or with a cut-off long ago or far in the future, and check list order as a property
+- [x] Snapshots: the stored fields, upsert, latest (the highest version), at a version, per-type reads, list newest first, `DeleteBefore` keeps the cut-off and returns the count, `DeleteAll`, `Count`
+- [x] Sagas: the stored fields and timestamp rules, idempotent `Complete` / `Fail` (also on a missing saga), `LoadByStatus` order and the type filter before the limit, `LoadTimedOut`, `Delete`, `Count`
+- [x] Processed events and commands: idempotent marks keep the first record, `Exists` per instance, `Count`, `DeleteByHandler`, the command list order, `DeleteOld` with an exclusive cut-off
+- [x] Dead letters: the stored fields, IDs increase and aren't reused, `List` in ID order, `Get` returns the latest, `GetByID`, `Delete`, `Count`, `DeleteOld`
 
 #### Step 4.7: Unit of work and concurrency contracts
 Files: `tarotest/unit_of_work_contract.go`, `tarotest/concurrency_contract.go`
