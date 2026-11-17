@@ -1,6 +1,6 @@
 # Implementation plan: TaroDomain for Go
 
-Status: Phase 0 done except CI's first green run; Phase 1 done (Steps 1.1–1.4), Step 2.1 done, next is Step 2.2. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
+Status: Phase 0 done except CI's first green run; Phase 1 done (Steps 1.1–1.4), Steps 2.1–2.2 done, next is Step 2.3. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
 
 ## How to use this plan
 
@@ -223,11 +223,11 @@ Files: `metadata.go`, `envelope.go`, `execution_context.go`, `metadata_test.go`,
 
 #### Step 2.2: Value objects and aggregate IDs
 Files: `value_object.go`, `aggregate_id.go`, `value_object_test.go`, `aggregate_id_test.go`
-- [ ] `NewValueObject[T](value, validate func(T) (bool, error))`. A `false` becomes `VALUE_OBJECT_INVALID`, an `*Error` passes through, and any other error becomes `VALUE_OBJECT_CONSTRUCTION_FAILED` with the error as its cause
-- [ ] `ValueObject[T]`: `Value()`, `Equal(other)`, `With(f)` (validates again), JSON marshalling of the inner value
-- [ ] `AggregateID` over `UUID`: `NewAggregateID()`, `AggregateIDFrom(string)`, `AggregateIDFromV7(string)`, `String()`, JSON as a string. An invalid UUID is `VALUE_OBJECT_INVALID`
-- [ ] `ID[Tag]`: a typed ID with the same factories (`NewID[Tag]()`, `IDFrom[Tag](string)`) and `Untyped() AggregateID`
-- [ ] Tests: an invalid value is rejected, a framework error passes through, a foreign error keeps its cause, `With` validates, equality ignores case, the v7-only factory rejects v4, typed ID JSON round trip
+- [x] `NewValueObject[T](value, validate func(T) (bool, error))`. A `false` becomes `VALUE_OBJECT_INVALID`, an `*Error` passes through, and any other error becomes `VALUE_OBJECT_CONSTRUCTION_FAILED` with the error as its cause
+- [x] `ValueObject[T]`: `Value()`, `Equal(other)`, `With(f)` (validates again), JSON marshalling of the inner value
+- [x] `AggregateID` over `UUID`: `NewAggregateID()`, `AggregateIDFrom(string)`, `AggregateIDFromV7(string)`, `String()`, JSON as a string. An invalid UUID is `VALUE_OBJECT_INVALID`
+- [x] `ID[Tag]`: a typed ID with the same factories (`NewID[Tag]()`, `IDFrom[Tag](string)`) and `Untyped() AggregateID`
+- [x] Tests: an invalid value is rejected, a framework error passes through, a foreign error keeps its cause, `With` validates, equality ignores case, the v7-only factory rejects v4, typed ID JSON round trip
 
 #### Step 2.3: Events
 Files: `event.go`, `serialized_event.go`, `event_test.go`
