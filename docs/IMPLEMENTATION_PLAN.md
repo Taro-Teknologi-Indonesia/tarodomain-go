@@ -1,6 +1,6 @@
 # Implementation plan: TaroDomain for Go
 
-Status: Phase 0 done except CI's first green run; Phases 1 and 2 done (Steps 1.1–2.5); Phase 3 in progress (Steps 3.1–3.2 done), next is Step 3.3. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
+Status: Phase 0 done except CI's first green run; Phases 1 and 2 done (Steps 1.1–2.5); Phase 3 in progress (Steps 3.1–3.3 done), next is Step 3.4. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
 
 ## How to use this plan
 
@@ -277,10 +277,10 @@ Files: `snapshot_store.go`, `saga_store.go`, `saga_store_test.go`
 
 #### Step 3.3: Idempotency, dead letter and unit of work contracts
 Files: `idempotency.go`, `dead_letter_store.go`, `unit_of_work.go`, `unit_of_work_test.go`
-- [ ] `ProcessedEventStore` (§12.3), `CommandIdempotencyStore` (§14.1) and `ProcessedCommand`. Marking twice keeps the first record
-- [ ] `DeadLetterStore` (§21.1), `DeadLetterInput`, `DeadLetterEntry`. `Write` returns the new ID; IDs increase in write order and are never reused
-- [ ] `UnitOfWork`: `Begin(ctx)`, `Commit(ctx)`, `Rollback(ctx)`, `IsActive()`. `ExecuteInUnit(ctx, unit, work)` rolls back on error or panic (and re-panics), and returns the work's error unchanged, with `rollbackError` in its context if the rollback also failed. `ActiveUnit(ctx)`; a nested call joins the unit already in the `ctx`
-- [ ] Tests (a fake unit): commit and rollback, the error unchanged, a failed begin, commit or rollback, a panic rolls back, a nested call joins and its error rolls back the outer unit
+- [x] `ProcessedEventStore` (§12.3), `CommandIdempotencyStore` (§14.1) and `ProcessedCommand`. Marking twice keeps the first record
+- [x] `DeadLetterStore` (§21.1), `DeadLetterInput`, `DeadLetterEntry`. `Write` returns the new ID; IDs increase in write order and are never reused
+- [x] `UnitOfWork`: `Begin(ctx)`, `Commit(ctx)`, `Rollback(ctx)`, `IsActive()`. `ExecuteInUnit(ctx, unit, work)` rolls back on error or panic (and re-panics), and returns the work's error unchanged, with `rollbackError` in its context if the rollback also failed. `ActiveUnit(ctx)`; a nested call joins the unit already in the `ctx`
+- [x] Tests (a fake unit): commit and rollback, the error unchanged, a failed begin, commit or rollback, a panic rolls back, a nested call joins and its error rolls back the outer unit
 
 #### Step 3.4: Event bus contracts and InMemoryEventBus
 Files: `event_bus.go`, `in_memory_bus.go`, `in_memory_bus_test.go`
