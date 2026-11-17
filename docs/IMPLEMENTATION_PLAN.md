@@ -1,6 +1,6 @@
 # Implementation plan: TaroDomain for Go
 
-Status: Phase 0 done except CI's first green run; Phases 1 and 2 done (Steps 1.1–2.5); Phase 3 in progress (Steps 3.1–3.3 done), next is Step 3.4. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
+Status: Phase 0 done except CI's first green run; Phases 1 and 2 done (Steps 1.1–2.5); Phase 3 in progress (Steps 3.1–3.4 done), next is Step 3.5. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
 
 ## How to use this plan
 
@@ -284,10 +284,10 @@ Files: `idempotency.go`, `dead_letter_store.go`, `unit_of_work.go`, `unit_of_wor
 
 #### Step 3.4: Event bus contracts and InMemoryEventBus
 Files: `event_bus.go`, `in_memory_bus.go`, `in_memory_bus_test.go`
-- [ ] `EventBus` (`Name()`, `PublishAll(ctx, []DomainEvent) error`), `EventHandler` (`Name()`, `Handle(ctx, DomainEvent) error`), `SubscribableEventBus` (`Subscribe(handler) error`, `Unsubscribe(name) bool`)
-- [ ] `NewInMemoryEventBus(name)`: delivers each event to every handler in subscription order before the next event. A second handler with a taken name is `INVALID_CONFIGURATION`. No lock is held while a handler runs, so a handler may publish to the same bus
-- [ ] `PublishAll` is fail-fast and returns the handler's error unchanged. `PublishAllWithResults` continues and returns a `Delivery` per handler and event
-- [ ] Tests (with `-race`): delivery order, fail-fast skips later handlers, with-results collects everything, duplicate names, unsubscribe, a handler publishing to its own bus, concurrent publishes
+- [x] `EventBus` (`Name()`, `PublishAll(ctx, []DomainEvent) error`), `EventHandler` (`Name()`, `Handle(ctx, DomainEvent) error`), `SubscribableEventBus` (`Subscribe(handler) error`, `Unsubscribe(name) bool`)
+- [x] `NewInMemoryEventBus(name)`: delivers each event to every handler in subscription order before the next event. A second handler with a taken name is `INVALID_CONFIGURATION`. No lock is held while a handler runs, so a handler may publish to the same bus
+- [x] `PublishAll` is fail-fast and returns the handler's error unchanged. `PublishAllWithResults` continues and returns a `Delivery` per handler and event
+- [x] Tests (with `-race`): delivery order, fail-fast skips later handlers, with-results collects everything, duplicate names, unsubscribe, a handler publishing to its own bus, concurrent publishes
 
 #### Step 3.5: Provider contract
 Files: `provider.go`, `provider_test.go`
