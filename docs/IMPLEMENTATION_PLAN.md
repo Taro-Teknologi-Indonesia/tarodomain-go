@@ -1,6 +1,6 @@
 # Implementation plan: TaroDomain for Go
 
-Status: Phase 0 done except CI's first green run; Phases 1 and 2 done (Steps 1.1–2.5), next is Step 3.1. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
+Status: Phase 0 done except CI's first green run; Phases 1 and 2 done (Steps 1.1–2.5); Phase 3 in progress (Step 3.1 done), next is Step 3.2. Written 2026-11-17; revised the same day: the one platform adapter for now is Cloudflare (Phase 11), and the SQL provider and the native worker loop moved out of scope; every tool runs in a dev container on Kiri, none on the host (Step 0.3). Targets the [TaroDomain spec v1.0](../spec/README.md) at commit `a9243e3` (the `spec/` submodule), the same commit the [Rust port](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust) implements. The Rust port's [plan](https://github.com/Taro-Teknologi-Indonesia/tarodomain-rust/blob/main/docs/IMPLEMENTATION_PLAN.md) records the design problems this plan reuses; it in turn reuses the [Dart port's](https://github.com/Taro-Teknologi-Indonesia/tarodomain-dart).
 
 ## How to use this plan
 
@@ -262,11 +262,11 @@ Files: `aggregate.go`, `aggregate_test.go`
 
 #### Step 3.1: Event store adapter contract
 Files: `stream_ids.go`, `event_store_adapter.go`, `stream_ids_test.go`
-- [ ] `EventStoreAdapter` with every §3.2 method, each taking a `ctx`, plus `RecordFailedAttempt(ctx, name, eventID) (int, error)`
-- [ ] `AppendResult`, `StreamMetadata`, `Subscription { Name, StreamID, LastSeen, CreatedAt, FailedEventID, FailedAttempts }`
-- [ ] `StreamAll` (`$all`), `StreamForAggregate(type, id)`, `CategoryOf(streamID)` and `ParseStreamID` (§3.1). An aggregate stream ID ends in `-` and a lower-case UUID, so a type may contain hyphens
-- [ ] Doc comments pin the semantics the contract suites test: versions count from 1, a missing stream has version 0, cross-stream reads come back in global **append** order, deleting a missing row is a no-op, a stale expected version fails with `OPTIMISTIC_CONCURRENCY`, appends are atomic and go only to aggregate streams, an empty append still checks the version, `Subscribe` is idempotent
-- [ ] Tests: stream ID kinds, including hyphenated types and non-canonical IDs
+- [x] `EventStoreAdapter` with every §3.2 method, each taking a `ctx`, plus `RecordFailedAttempt(ctx, name, eventID) (int, error)`
+- [x] `AppendResult`, `StreamMetadata`, `Subscription { Name, StreamID, LastSeen, CreatedAt, FailedEventID, FailedAttempts }`
+- [x] `StreamAll` (`$all`), `StreamForAggregate(type, id)`, `CategoryOf(streamID)` and `ParseStreamID` (§3.1). An aggregate stream ID ends in `-` and a lower-case UUID, so a type may contain hyphens
+- [x] Doc comments pin the semantics the contract suites test: versions count from 1, a missing stream has version 0, cross-stream reads come back in global **append** order, deleting a missing row is a no-op, a stale expected version fails with `OPTIMISTIC_CONCURRENCY`, appends are atomic and go only to aggregate streams, an empty append still checks the version, `Subscribe` is idempotent
+- [x] Tests: stream ID kinds, including hyphenated types and non-canonical IDs
 
 #### Step 3.2: Snapshot and saga store contracts
 Files: `snapshot_store.go`, `saga_store.go`, `saga_store_test.go`
